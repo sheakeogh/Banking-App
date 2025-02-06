@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public AuthenticationResponse createNewUser(UserRequest userRequest) {
-        if(userRepository.findByUsername(userRequest.getUsername()).isPresent() || !isValidUserRequest(userRequest)) {
+        if (!isValidUserRequest(userRequest) || userRepository.findByUsername(userRequest.getUsername()).isPresent()) {
             return null;
         }
 
@@ -59,7 +59,7 @@ public class UserServiceImpl implements UserService {
                 loginRequest.getPassword()
         ));
 
-        User user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow(() -> new RuntimeException("No User Found."));
+        User user = userRepository.findByUsername(loginRequest.getUsername()).get();
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
         revokeAllTokenByUser(user);
@@ -78,13 +78,13 @@ public class UserServiceImpl implements UserService {
 
         String token = authHeader.substring(7);
         String username = jwtService.extractUsername(token);
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("No User Found."));
+        Optional<User> user = userRepository.findByUsername(username);
 
-        if (jwtService.isValidRefreshToken(token, user)) {
-            String accessToken = jwtService.generateAccessToken(user);
-            String refreshToken = jwtService.generateRefreshToken(user);
-            revokeAllTokenByUser(user);
-            saveUserToken(accessToken, refreshToken, user);
+        if (user.isPresent() && jwtService.isValidRefreshToken(token, user.get())) {
+            String accessToken = jwtService.generateAccessToken(user.get());
+            String refreshToken = jwtService.generateRefreshToken(user.get());
+            revokeAllTokenByUser(user.get());
+            saveUserToken(accessToken, refreshToken, user.get());
 
             return new AuthenticationResponse(accessToken, refreshToken, "New Token Generated.");
         }
