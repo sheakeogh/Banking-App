@@ -93,6 +93,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User getLoggedInUser(HttpServletRequest request, HttpServletResponse response) {
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if(authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return null;
+        }
+
+        String token = authHeader.substring(7);
+        String username = jwtService.extractUsername(token);
+
+        return userRepository.findByUsername(username).orElse(null);
+    }
+
+    @Override
     public User getUserById(Long id) {
         return userRepository.findById(id).orElse(null);
     }

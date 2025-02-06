@@ -42,9 +42,9 @@ public class SecurityConfiguration {
                         cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
-                        req -> req.requestMatchers("/api/auth/**", "/swagger-ui/**", "swagger-ui.html", "/v3/api-docs/**")
+                        req -> req.requestMatchers("/api/users/auth/**", "/swagger-ui/**", "swagger-ui.html", "/v3/api-docs/**")
                                 .permitAll()
-                                .requestMatchers("/admin_only/**").hasAuthority("ADMIN")
+                                .requestMatchers("/api/getAllUsers/**", "/api/getAllAccounts/**").hasAuthority("ADMIN")
                                 .anyRequest()
                                 .authenticated())
                 .userDetailsService(userDetailsService)
@@ -57,7 +57,7 @@ public class SecurityConfiguration {
                         )
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .logout(l -> l
-                        .logoutUrl("/api/logout")
+                        .logoutUrl("/api/users/logout")
                         .addLogoutHandler(logoutHandler)
                         .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext()
                         ))

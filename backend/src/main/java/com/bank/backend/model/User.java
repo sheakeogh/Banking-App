@@ -26,6 +26,8 @@ public class User implements UserDetails {
     private String password;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Token> tokenList;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Account> accountList;
     @Enumerated(value = EnumType.STRING)
     private UserRole userRole;
 

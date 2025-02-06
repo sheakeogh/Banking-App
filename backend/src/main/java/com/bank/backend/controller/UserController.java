@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/users")
 public class UserController {
 
     @Autowired
@@ -72,6 +72,22 @@ public class UserController {
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(authenticationResponse);
+    }
+
+    @GetMapping("/getLoggedInUser")
+    @Operation(summary = "Get Logged In User")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Get Logged In User", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = User.class))}),
+            @ApiResponse(responseCode = "400", description = "Bad Request", content = { @Content(schema = @Schema(implementation = InvalidRequestException.class))} ),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = { @Content(schema = @Schema(hidden = true))} )
+    })
+    public ResponseEntity<?> getLoggedInUser(HttpServletRequest request, HttpServletResponse response) {
+        User user = userService.getLoggedInUser(request, response);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new InvalidRequestException("No User Found."));
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(user);
     }
 
     @GetMapping("/getUser/{id}")
