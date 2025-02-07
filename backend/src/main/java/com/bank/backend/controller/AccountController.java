@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +38,22 @@ public class AccountController {
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(account);
+    }
+
+    @GetMapping("/getLoggedInAccounts")
+    @Operation(summary = "Get Logged In User Accounts")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Get Logged In User Accounts", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = Account.class))}),
+            @ApiResponse(responseCode = "400", description = "Bad Request", content = { @Content(schema = @Schema(implementation = InvalidRequestException.class))} ),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = { @Content(schema = @Schema(hidden = true))} )
+    })
+    public ResponseEntity<?> getLoggedInAccounts(HttpServletRequest request) {
+        List<Account> accountList = accountService.getLoggedInAccounts(request);
+        if (accountList == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new InvalidRequestException("No Accounts Found. Try Again!"));
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(accountList);
     }
 
     @GetMapping("/getAccount/{id}")

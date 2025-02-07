@@ -93,7 +93,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getLoggedInUser(HttpServletRequest request, HttpServletResponse response) {
+    public User getLoggedInUser(HttpServletRequest request) {
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         if(authHeader == null || !authHeader.startsWith("Bearer ")) {
             return null;
@@ -116,9 +116,42 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User updateLoggedInUser(HttpServletRequest request, UserRequest userRequest) {
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if(authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return null;
+        }
+
+        String token = authHeader.substring(7);
+        String username = jwtService.extractUsername(token);
+
+        Optional<User> user = userRepository.findByUsername(username);
+        return user.map(value -> saveUser(userRequest, value)).orElse(null);
+    }
+
+    @Override
     public User updateUserById(UserRequest userRequest, Long id) {
         Optional<User> user = userRepository.findById(id);
         return user.map(value -> saveUser(userRequest, value)).orElse(null);
+    }
+
+    @Override
+    public boolean deleteLoggedInUser(HttpServletRequest request) {
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if(authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return false;
+        }
+
+        String token = authHeader.substring(7);
+        String username = jwtService.extractUsername(token);
+
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isPresent()) {
+            userRepository.deleteById(user.get().getId());
+            return true;
+        }
+
+        return false;
     }
 
     @Override

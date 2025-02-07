@@ -2,12 +2,17 @@ package com.bank.backend.service.impl;
 
 import com.bank.backend.model.Account;
 import com.bank.backend.model.AccountRequest;
+import com.bank.backend.model.User;
 import com.bank.backend.repository.AccountRepository;
 import com.bank.backend.repository.UserRepository;
+import com.bank.backend.service.JwtService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import com.bank.backend.service.AccountService;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -18,6 +23,9 @@ public class AccountServiceImpl implements AccountService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private JwtService jwtService;
 
     @Override
     public Account createAccount(AccountRequest accountRequest) {
@@ -31,6 +39,24 @@ public class AccountServiceImpl implements AccountService {
 
                 return accountRepository.save(account);
             }
+        }
+
+        return null;
+    }
+
+    @Override
+    public List<Account> getLoggedInAccounts(HttpServletRequest request) {
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if(authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return null;
+        }
+
+        String token = authHeader.substring(7);
+        String username = jwtService.extractUsername(token);
+
+        User user = userRepository.findByUsername(username).orElse(null);
+        if (user != null) {
+            return user.getAccountList();
         }
 
         return null;

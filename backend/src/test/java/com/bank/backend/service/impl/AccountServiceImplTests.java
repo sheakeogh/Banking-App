@@ -3,6 +3,8 @@ package com.bank.backend.service.impl;
 import com.bank.backend.model.*;
 import com.bank.backend.repository.AccountRepository;
 import com.bank.backend.repository.UserRepository;
+import com.bank.backend.service.JwtService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,6 +12,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpHeaders;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +29,15 @@ public class AccountServiceImplTests {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private HttpServletRequest request;
+
+    @Mock
+    private HttpServletRequest requestNull;
+
+    @Mock
+    private JwtService jwtService;
 
     @InjectMocks
     private AccountServiceImpl accountService;
@@ -75,6 +88,57 @@ public class AccountServiceImplTests {
         Account accountResponse = accountService.createAccount(null);
 
         Assertions.assertNull(accountResponse);
+    }
+
+    @Test
+    public void testGetLoggedInAccountsSuccess() {
+        User user = createUser();
+        List<Account> accountList = user.getAccountList();
+
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
+        Mockito.when(jwtService.extractUsername(Mockito.anyString())).thenReturn(user.getUsername());
+        Mockito.when(userRepository.findByUsername(Mockito.anyString())).thenReturn(Optional.of(user));
+
+        List<Account> accountListResponse = accountService.getLoggedInAccounts(request);
+
+        Assertions.assertNotNull(accountListResponse);
+        Assertions.assertEquals(accountList, accountListResponse);
+
+        Mockito.verify(request, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
+        Mockito.verify(jwtService, Mockito.times(1)).extractUsername(Mockito.anyString());
+        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(Mockito.anyString());
+    }
+
+    @Test
+    public void testGetLoggedInAccountsNullHeader() {
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Test: Token");
+        Mockito.when(requestNull.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
+
+        List<Account> accountListResponse = accountService.getLoggedInAccounts(request);
+        List<Account> accountListResponseNull = accountService.getLoggedInAccounts(requestNull);
+
+        Assertions.assertNull(accountListResponse);
+        Assertions.assertNull(accountListResponseNull);
+
+        Mockito.verify(request, Mockito.times(1)).getHeader(Mockito.any());
+        Mockito.verify(requestNull, Mockito.times(1)).getHeader(Mockito.any());
+    }
+
+    @Test
+    public void testGetLoggedInAccountsNullUser() {
+        User user = createUser();
+
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
+        Mockito.when(jwtService.extractUsername(Mockito.anyString())).thenReturn(user.getUsername());
+        Mockito.when(userRepository.findByUsername(Mockito.anyString())).thenReturn(Optional.empty());
+
+        List<Account> accountListResponse = accountService.getLoggedInAccounts(request);
+
+        Assertions.assertNull(accountListResponse);
+
+        Mockito.verify(request, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
+        Mockito.verify(jwtService, Mockito.times(1)).extractUsername(Mockito.anyString());
+        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(Mockito.anyString());
     }
 
     @Test
@@ -169,6 +233,13 @@ public class AccountServiceImplTests {
         user.setPassword("Password");
         user.setUserRole(UserRole.USER);
 
+        Token token = new Token();
+        token.setId(1L);
+        token.setAccessToken("accessToken");
+        token.setRefreshToken("refreshToken");
+        token.setLoggedOut(false);
+        token.setUser(user);
+
         Account account = new Account();
         account.setId(1L);
         account.setAccountNumber("123456");
@@ -176,6 +247,7 @@ public class AccountServiceImplTests {
         account.setAccountType(AccountType.CURRENT);
         account.setUser(user);
 
+        user.setTokenList(List.of(token));
         user.setAccountList(List.of(account));
 
         return user;

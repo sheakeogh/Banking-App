@@ -2,6 +2,7 @@ package com.bank.backend.controller;
 
 import com.bank.backend.model.*;
 import com.bank.backend.service.AccountService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,7 +12,6 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -19,6 +19,9 @@ public class AccountControllerTests {
 
     @Mock
     private AccountService accountService;
+
+    @Mock
+    private HttpServletRequest request;
 
     @InjectMocks
     private AccountController accountController;
@@ -56,6 +59,33 @@ public class AccountControllerTests {
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 
         Mockito.verify(accountService, Mockito.times(1)).createAccount(Mockito.any(AccountRequest.class));
+    }
+
+    @Test
+    public void testGetLoggedInAccountsSuccess() {
+        List<Account> accountList = createUser().getAccountList();
+
+        Mockito.when(accountService.getLoggedInAccounts(Mockito.any(HttpServletRequest.class))).thenReturn(accountList);
+
+        ResponseEntity<?> response = accountController.getLoggedInAccounts(request);
+
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertEquals(accountList, response.getBody());
+
+        Mockito.verify(accountService, Mockito.times(1)).getLoggedInAccounts(Mockito.any(HttpServletRequest.class));
+    }
+
+    @Test
+    public void testGetLoggedInAccountsFail() {
+        Mockito.when(accountService.getLoggedInAccounts(Mockito.any(HttpServletRequest.class))).thenReturn(null);
+
+        ResponseEntity<?> response = accountController.getLoggedInAccounts(request);
+
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        Mockito.verify(accountService, Mockito.times(1)).getLoggedInAccounts(Mockito.any(HttpServletRequest.class));
     }
 
     @Test

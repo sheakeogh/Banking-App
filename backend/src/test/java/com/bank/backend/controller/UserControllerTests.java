@@ -1,6 +1,5 @@
 package com.bank.backend.controller;
 
-import com.bank.backend.exception.InvalidRequestException;
 import com.bank.backend.model.*;
 import com.bank.backend.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +21,9 @@ public class UserControllerTests {
 
     @Mock
     private UserService userService;
+
+    @Mock
+    private HttpServletRequest request;
 
     @InjectMocks
     private UserController userController;
@@ -93,13 +95,12 @@ public class UserControllerTests {
 
     @Test
     public void testRefreshTokenSuccess() {
-        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         HttpServletResponse mockResponse = Mockito.mock(HttpServletResponse.class);
         AuthenticationResponse authenticationResponse = new AuthenticationResponse("accessToken", "refreshToken", "User Login Was Successful.");
 
         Mockito.when(userService.refreshToken(Mockito.any(HttpServletRequest.class), Mockito.any(HttpServletResponse.class))).thenReturn(authenticationResponse);
 
-        ResponseEntity<?> response = userController.refreshToken(mockRequest, mockResponse);
+        ResponseEntity<?> response = userController.refreshToken(request, mockResponse);
 
         Assertions.assertNotNull(response);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -110,12 +111,11 @@ public class UserControllerTests {
 
     @Test
     public void testRefreshTokenFail() {
-        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         HttpServletResponse mockResponse = Mockito.mock(HttpServletResponse.class);
 
         Mockito.when(userService.refreshToken(Mockito.any(HttpServletRequest.class), Mockito.any(HttpServletResponse.class))).thenReturn(null);
 
-        ResponseEntity<?> response = userController.refreshToken(mockRequest, mockResponse);
+        ResponseEntity<?> response = userController.refreshToken(request, mockResponse);
 
         Assertions.assertNotNull(response);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -125,34 +125,29 @@ public class UserControllerTests {
 
     @Test
     public void testGetLoggedInUserSuccess() {
-        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
-        HttpServletResponse mockResponse = Mockito.mock(HttpServletResponse.class);
         User user = createUser();
 
-        Mockito.when(userService.getLoggedInUser(Mockito.any(HttpServletRequest.class), Mockito.any(HttpServletResponse.class))).thenReturn(user);
+        Mockito.when(userService.getLoggedInUser(Mockito.any(HttpServletRequest.class))).thenReturn(user);
 
-        ResponseEntity<?> response = userController.getLoggedInUser(mockRequest, mockResponse);
+        ResponseEntity<?> response = userController.getLoggedInUser(request);
 
         Assertions.assertNotNull(response);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertEquals(user, response.getBody());
 
-        Mockito.verify(userService, Mockito.times(1)).getLoggedInUser(Mockito.any(HttpServletRequest.class), Mockito.any(HttpServletResponse.class));
+        Mockito.verify(userService, Mockito.times(1)).getLoggedInUser(Mockito.any(HttpServletRequest.class));
     }
 
     @Test
     public void testGetLoggedInUserFail() {
-        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
-        HttpServletResponse mockResponse = Mockito.mock(HttpServletResponse.class);
+        Mockito.when(userService.getLoggedInUser(Mockito.any(HttpServletRequest.class))).thenReturn(null);
 
-        Mockito.when(userService.getLoggedInUser(Mockito.any(HttpServletRequest.class), Mockito.any(HttpServletResponse.class))).thenReturn(null);
-
-        ResponseEntity<?> response = userController.getLoggedInUser(mockRequest, mockResponse);
+        ResponseEntity<?> response = userController.getLoggedInUser(request);
 
         Assertions.assertNotNull(response);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 
-        Mockito.verify(userService, Mockito.times(1)).getLoggedInUser(Mockito.any(HttpServletRequest.class), Mockito.any(HttpServletResponse.class));
+        Mockito.verify(userService, Mockito.times(1)).getLoggedInUser(Mockito.any(HttpServletRequest.class));
     }
 
     @Test
@@ -210,6 +205,36 @@ public class UserControllerTests {
     }
 
     @Test
+    public void testUpdateLoggedInUserSuccess() {
+        UserRequest userRequest = createUserRequest();
+        User user = createUser();
+
+        Mockito.when(userService.updateLoggedInUser(Mockito.any(HttpServletRequest.class), Mockito.any(UserRequest.class))).thenReturn(user);
+
+        ResponseEntity<?> response = userController.updateLoggedInUser(request, userRequest);
+
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertEquals(user, response.getBody());
+
+        Mockito.verify(userService, Mockito.times(1)).updateLoggedInUser(Mockito.any(HttpServletRequest.class), Mockito.any(UserRequest.class));
+    }
+
+    @Test
+    public void testUpdateLoggedInUserFail() {
+        UserRequest userRequest = createUserRequest();
+
+        Mockito.when(userService.updateLoggedInUser(Mockito.any(HttpServletRequest.class), Mockito.any(UserRequest.class))).thenReturn(null);
+
+        ResponseEntity<?> response = userController.updateLoggedInUser(request, userRequest);
+
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        Mockito.verify(userService, Mockito.times(1)).updateLoggedInUser(Mockito.any(HttpServletRequest.class), Mockito.any(UserRequest.class));
+    }
+
+    @Test
     public void testUpdateUserByIdSuccess() {
         User user = createUser();
         UserRequest userRequest = createUserRequest();
@@ -236,6 +261,30 @@ public class UserControllerTests {
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 
         Mockito.verify(userService, Mockito.times(1)).updateUserById(Mockito.any(UserRequest.class), Mockito.any(Long.class));
+    }
+
+    @Test
+    public void testDeleteLoggedInUserSuccess() {
+        Mockito.when(userService.deleteLoggedInUser(Mockito.any(HttpServletRequest.class))).thenReturn(true);
+
+        ResponseEntity<?> response = userController.deleteLoggedInUser(request);
+
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+
+        Mockito.verify(userService, Mockito.times(1)).deleteLoggedInUser(Mockito.any(HttpServletRequest.class));
+    }
+
+    @Test
+    public void testDeleteLoggedInUserFail() {
+        Mockito.when(userService.deleteLoggedInUser(Mockito.any(HttpServletRequest.class))).thenReturn(false);
+
+        ResponseEntity<?> response = userController.deleteLoggedInUser(request);
+
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        Mockito.verify(userService, Mockito.times(1)).deleteLoggedInUser(Mockito.any(HttpServletRequest.class));
     }
 
     @Test

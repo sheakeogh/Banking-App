@@ -13,10 +13,12 @@ public interface UserService {
     AuthenticationResponse createNewUser(UserRequest userRequest);
     AuthenticationResponse loginUser(LoginRequest userRequest);
     AuthenticationResponse refreshToken(HttpServletRequest request, HttpServletResponse response);
-    User getLoggedInUser(HttpServletRequest request, HttpServletResponse response);
+    User getLoggedInUser(HttpServletRequest request);
     User getUserById(Long id);
     List<User> getAllUsers();
+    User updateLoggedInUser(HttpServletRequest request, UserRequest userRequest);
     User updateUserById(UserRequest userRequest, Long id);
+    boolean deleteLoggedInUser(HttpServletRequest request);
     boolean deleteUserById(Long id);
 
 }

@@ -33,6 +33,12 @@ public class UserServiceImplTests {
     private JwtService jwtService;
 
     @Mock
+    private HttpServletRequest request;
+
+    @Mock
+    private HttpServletRequest requestNull;
+
+    @Mock
     private TokenRepository tokenRepository;
 
     @Mock
@@ -175,10 +181,9 @@ public class UserServiceImplTests {
     @Test
     public void testRefreshTokenSuccess() {
         User user = createUser();
-        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         HttpServletResponse mockResponse = Mockito.mock(HttpServletResponse.class);
 
-        Mockito.when(mockRequest.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
         Mockito.when(jwtService.extractUsername(Mockito.anyString())).thenReturn(user.getUsername());
         Mockito.when(userRepository.findByUsername(Mockito.anyString())).thenReturn(Optional.of(user));
         Mockito.when(jwtService.isValidRefreshToken(Mockito.anyString(), Mockito.any(User.class))).thenReturn(true);
@@ -188,14 +193,14 @@ public class UserServiceImplTests {
         Mockito.when(tokenRepository.saveAll(Mockito.anyList())).thenReturn(user.getTokenList());
         Mockito.when(tokenRepository.save(Mockito.any(Token.class))).thenReturn(user.getTokenList().get(0));
 
-        AuthenticationResponse authenticationResponse = userService.refreshToken(mockRequest, mockResponse);
+        AuthenticationResponse authenticationResponse = userService.refreshToken(request, mockResponse);
 
         Assertions.assertNotNull(authenticationResponse);
         Assertions.assertEquals("newAccessToken", authenticationResponse.getAccessToken());
         Assertions.assertEquals("newRefreshToken", authenticationResponse.getRefreshToken());
         Assertions.assertEquals("New Token Generated.", authenticationResponse.getMessage());
 
-        Mockito.verify(mockRequest, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
+        Mockito.verify(request, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
         Mockito.verify(jwtService, Mockito.times(1)).extractUsername(Mockito.anyString());
         Mockito.verify(userRepository, Mockito.times(1)).findByUsername(Mockito.anyString());
         Mockito.verify(jwtService, Mockito.times(1)).isValidRefreshToken(Mockito.anyString(), Mockito.any(User.class));
@@ -208,38 +213,35 @@ public class UserServiceImplTests {
 
     @Test
     public void testRefreshTokenNullHeader() {
-        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
-        HttpServletRequest mockRequestNull = Mockito.mock(HttpServletRequest.class);
         HttpServletResponse mockResponse = Mockito.mock(HttpServletResponse.class);
 
-        Mockito.when(mockRequest.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Test: Token");
-        Mockito.when(mockRequestNull.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Test: Token");
+        Mockito.when(requestNull.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
 
-        AuthenticationResponse authenticationResponse = userService.refreshToken(mockRequest, mockResponse);
-        AuthenticationResponse authenticationResponseNullHeader = userService.refreshToken(mockRequestNull, mockResponse);
+        AuthenticationResponse authenticationResponse = userService.refreshToken(request, mockResponse);
+        AuthenticationResponse authenticationResponseNullHeader = userService.refreshToken(requestNull, mockResponse);
 
         Assertions.assertNull(authenticationResponse);
         Assertions.assertNull(authenticationResponseNullHeader);
 
-        Mockito.verify(mockRequest, Mockito.times(1)).getHeader(Mockito.any());
-        Mockito.verify(mockRequestNull, Mockito.times(1)).getHeader(Mockito.any());
+        Mockito.verify(request, Mockito.times(1)).getHeader(Mockito.any());
+        Mockito.verify(requestNull, Mockito.times(1)).getHeader(Mockito.any());
     }
 
     @Test
     public void testRefreshTokenNullUser() {
         User user = createUser();
-        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         HttpServletResponse mockResponse = Mockito.mock(HttpServletResponse.class);
 
-        Mockito.when(mockRequest.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
         Mockito.when(jwtService.extractUsername(Mockito.anyString())).thenReturn(user.getUsername());
         Mockito.when(userRepository.findByUsername(Mockito.anyString())).thenReturn(Optional.empty());
 
-        AuthenticationResponse authenticationResponse = userService.refreshToken(mockRequest, mockResponse);
+        AuthenticationResponse authenticationResponse = userService.refreshToken(request, mockResponse);
 
         Assertions.assertNull(authenticationResponse);
 
-        Mockito.verify(mockRequest, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
+        Mockito.verify(request, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
         Mockito.verify(jwtService, Mockito.times(1)).extractUsername(Mockito.anyString());
         Mockito.verify(userRepository, Mockito.times(1)).findByUsername(Mockito.anyString());
     }
@@ -247,19 +249,18 @@ public class UserServiceImplTests {
     @Test
     public void testRefreshTokenInvalidToken() {
         User user = createUser();
-        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         HttpServletResponse mockResponse = Mockito.mock(HttpServletResponse.class);
 
-        Mockito.when(mockRequest.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
         Mockito.when(jwtService.extractUsername(Mockito.anyString())).thenReturn(user.getUsername());
         Mockito.when(userRepository.findByUsername(Mockito.anyString())).thenReturn(Optional.of(user));
         Mockito.when(jwtService.isValidRefreshToken(Mockito.anyString(), Mockito.any(User.class))).thenReturn(false);
 
-        AuthenticationResponse authenticationResponse = userService.refreshToken(mockRequest, mockResponse);
+        AuthenticationResponse authenticationResponse = userService.refreshToken(request, mockResponse);
 
         Assertions.assertNull(authenticationResponse);
 
-        Mockito.verify(mockRequest, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
+        Mockito.verify(request, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
         Mockito.verify(jwtService, Mockito.times(1)).extractUsername(Mockito.anyString());
         Mockito.verify(userRepository, Mockito.times(1)).findByUsername(Mockito.anyString());
         Mockito.verify(jwtService, Mockito.times(1)).isValidRefreshToken(Mockito.anyString(), Mockito.any(User.class));
@@ -268,57 +269,50 @@ public class UserServiceImplTests {
     @Test
     public void testGetLoggedInUserSuccess() {
         User user = createUser();
-        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
-        HttpServletResponse mockResponse = Mockito.mock(HttpServletResponse.class);
 
-        Mockito.when(mockRequest.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
         Mockito.when(jwtService.extractUsername(Mockito.anyString())).thenReturn(user.getUsername());
         Mockito.when(userRepository.findByUsername(Mockito.anyString())).thenReturn(Optional.of(user));
 
-        User userResponse = userService.getLoggedInUser(mockRequest, mockResponse);
+        User userResponse = userService.getLoggedInUser(request);
 
         Assertions.assertNotNull(userResponse);
         Assertions.assertEquals(user, userResponse);
 
-        Mockito.verify(mockRequest, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
+        Mockito.verify(request, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
         Mockito.verify(jwtService, Mockito.times(1)).extractUsername(Mockito.anyString());
         Mockito.verify(userRepository, Mockito.times(1)).findByUsername(Mockito.anyString());
     }
 
     @Test
     public void testGetLoggedInUserNullHeader() {
-        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
-        HttpServletRequest mockRequestNull = Mockito.mock(HttpServletRequest.class);
-        HttpServletResponse mockResponse = Mockito.mock(HttpServletResponse.class);
 
-        Mockito.when(mockRequest.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Test: Token");
-        Mockito.when(mockRequestNull.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Test: Token");
+        Mockito.when(requestNull.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
 
-        User userResponse = userService.getLoggedInUser(mockRequest, mockResponse);
-        User userResponseNullHeader = userService.getLoggedInUser(mockRequestNull, mockResponse);
+        User userResponse = userService.getLoggedInUser(request);
+        User userResponseNullHeader = userService.getLoggedInUser(requestNull);
 
         Assertions.assertNull(userResponse);
         Assertions.assertNull(userResponseNullHeader);
 
-        Mockito.verify(mockRequest, Mockito.times(1)).getHeader(Mockito.any());
-        Mockito.verify(mockRequestNull, Mockito.times(1)).getHeader(Mockito.any());
+        Mockito.verify(request, Mockito.times(1)).getHeader(Mockito.any());
+        Mockito.verify(requestNull, Mockito.times(1)).getHeader(Mockito.any());
     }
 
     @Test
     public void testGetLoggedInUserNullUser() {
         User user = createUser();
-        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
-        HttpServletResponse mockResponse = Mockito.mock(HttpServletResponse.class);
 
-        Mockito.when(mockRequest.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
         Mockito.when(jwtService.extractUsername(Mockito.anyString())).thenReturn(user.getUsername());
         Mockito.when(userRepository.findByUsername(Mockito.anyString())).thenReturn(Optional.empty());
 
-        User userResponse = userService.getLoggedInUser(mockRequest, mockResponse);
+        User userResponse = userService.getLoggedInUser(request);
 
         Assertions.assertNull(userResponse);
 
-        Mockito.verify(mockRequest, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
+        Mockito.verify(request, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
         Mockito.verify(jwtService, Mockito.times(1)).extractUsername(Mockito.anyString());
         Mockito.verify(userRepository, Mockito.times(1)).findByUsername(Mockito.anyString());
     }
@@ -383,6 +377,62 @@ public class UserServiceImplTests {
     }
 
     @Test
+    public void testUpdateLoggedInUserSuccess() {
+        User user = createUser();
+        UserRequest userRequest = createUserRequest();
+
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
+        Mockito.when(jwtService.extractUsername(Mockito.anyString())).thenReturn(user.getUsername());
+        Mockito.when(userRepository.findByUsername(Mockito.anyString())).thenReturn(Optional.of(user));
+        Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(user);
+
+        User userResponse = userService.updateLoggedInUser(request, userRequest);
+
+        Assertions.assertNotNull(userResponse);
+        Assertions.assertEquals(user, userResponse);
+
+        Mockito.verify(request, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
+        Mockito.verify(jwtService, Mockito.times(1)).extractUsername(Mockito.anyString());
+        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(Mockito.anyString());
+        Mockito.verify(userRepository, Mockito.times(1)).save(Mockito.any(User.class));
+    }
+
+    @Test
+    public void testUpdateLoggedInUserNullHeader() {
+        UserRequest userRequest = createUserRequest();
+
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Test: Token");
+        Mockito.when(requestNull.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
+
+        User userResponse = userService.updateLoggedInUser(request, userRequest);
+        User userResponseNullHeader = userService.updateLoggedInUser(requestNull, userRequest);
+
+        Assertions.assertNull(userResponse);
+        Assertions.assertNull(userResponseNullHeader);
+
+        Mockito.verify(request, Mockito.times(1)).getHeader(Mockito.any());
+        Mockito.verify(requestNull, Mockito.times(1)).getHeader(Mockito.any());
+    }
+
+    @Test
+    public void testUpdateLoggedInUserNullUser() {
+        User user = createUser();
+        UserRequest userRequest = createUserRequest();
+
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
+        Mockito.when(jwtService.extractUsername(Mockito.anyString())).thenReturn(user.getUsername());
+        Mockito.when(userRepository.findByUsername(Mockito.anyString())).thenReturn(Optional.empty());
+
+        User userResponse = userService.updateLoggedInUser(request, userRequest);
+
+        Assertions.assertNull(userResponse);
+
+        Mockito.verify(request, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
+        Mockito.verify(jwtService, Mockito.times(1)).extractUsername(Mockito.anyString());
+        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(Mockito.anyString());
+    }
+
+    @Test
     public void testUpdateUserByIdSuccess() {
         User user = createUser();
         UserRequest userRequest = createUserRequest();
@@ -417,6 +467,58 @@ public class UserServiceImplTests {
         Assertions.assertNull(userResponse);
 
         Mockito.verify(userRepository, Mockito.times(1)).findById(Mockito.any(Long.class));
+    }
+
+    @Test
+    public void testDeleteLoggedInUserSuccess() {
+        User user = createUser();
+
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
+        Mockito.when(jwtService.extractUsername(Mockito.anyString())).thenReturn(user.getUsername());
+        Mockito.when(userRepository.findByUsername(Mockito.anyString())).thenReturn(Optional.of(user));
+        Mockito.doNothing().when(userRepository).deleteById(Mockito.any(Long.class));
+
+        boolean userResponse = userService.deleteLoggedInUser(request);
+
+        Assertions.assertTrue(userResponse);
+
+        Mockito.verify(request, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
+        Mockito.verify(jwtService, Mockito.times(1)).extractUsername(Mockito.anyString());
+        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(Mockito.anyString());
+        Mockito.verify(userRepository, Mockito.times(1)).deleteById(Mockito.any(Long.class));
+    }
+
+    @Test
+    public void testDeleteLoggedInUserNullHeader() {
+
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Test: Token");
+        Mockito.when(requestNull.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
+
+        boolean userResponse = userService.deleteLoggedInUser(request);
+        boolean userResponseNullHeader = userService.deleteLoggedInUser(requestNull);
+
+        Assertions.assertFalse(userResponse);
+        Assertions.assertFalse(userResponseNullHeader);
+
+        Mockito.verify(request, Mockito.times(1)).getHeader(Mockito.any());
+        Mockito.verify(requestNull, Mockito.times(1)).getHeader(Mockito.any());
+    }
+
+    @Test
+    public void testDeleteLoggedInUserNullUser() {
+        User user = createUser();
+
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
+        Mockito.when(jwtService.extractUsername(Mockito.anyString())).thenReturn(user.getUsername());
+        Mockito.when(userRepository.findByUsername(Mockito.anyString())).thenReturn(Optional.empty());
+
+        boolean userResponse = userService.deleteLoggedInUser(request);
+
+        Assertions.assertFalse(userResponse);
+
+        Mockito.verify(request, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
+        Mockito.verify(jwtService, Mockito.times(1)).extractUsername(Mockito.anyString());
+        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(Mockito.anyString());
     }
 
     @Test

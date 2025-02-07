@@ -1,8 +1,13 @@
 package com.bank.backend.model;
 
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
 public enum AccountType {
 
-    CURRENT,
-    SAVINGS
+    CURRENT("current"),
+    SAVINGS("savings");
+
+    private final String accountType;
 
 }

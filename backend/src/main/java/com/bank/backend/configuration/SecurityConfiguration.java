@@ -1,6 +1,7 @@
 package com.bank.backend.configuration;
 
 import com.bank.backend.filter.JwtAuthenticationFilter;
+import com.bank.backend.model.AdminEndpoints;
 import com.bank.backend.service.impl.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,7 @@ import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Configuration
 @EnableWebSecurity
@@ -44,7 +46,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(
                         req -> req.requestMatchers("/api/users/auth/**", "/swagger-ui/**", "swagger-ui.html", "/v3/api-docs/**")
                                 .permitAll()
-                                .requestMatchers("/api/getAllUsers/**", "/api/getAllAccounts/**").hasAuthority("ADMIN")
+                                .requestMatchers(getAllAdminEndpoints()).hasAuthority("ADMIN")
                                 .anyRequest()
                                 .authenticated())
                 .userDetailsService(userDetailsService)
@@ -99,4 +101,11 @@ public class SecurityConfiguration {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
+
+    private String[] getAllAdminEndpoints() {
+        return Stream.of(AdminEndpoints.values())
+                .map(AdminEndpoints::getEndpoint)
+                .toArray(String[]::new);
+    }
+
 }

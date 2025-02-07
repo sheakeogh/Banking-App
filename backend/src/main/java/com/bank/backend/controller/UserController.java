@@ -81,8 +81,8 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Bad Request", content = { @Content(schema = @Schema(implementation = InvalidRequestException.class))} ),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = { @Content(schema = @Schema(hidden = true))} )
     })
-    public ResponseEntity<?> getLoggedInUser(HttpServletRequest request, HttpServletResponse response) {
-        User user = userService.getLoggedInUser(request, response);
+    public ResponseEntity<?> getLoggedInUser(HttpServletRequest request) {
+        User user = userService.getLoggedInUser(request);
         if (user == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new InvalidRequestException("No User Found."));
         }
@@ -122,6 +122,22 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userList);
     }
 
+    @GetMapping("/updateLoggedInUser")
+    @Operation(summary = "Update Logged In User")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Update Logged In User", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = User.class))}),
+            @ApiResponse(responseCode = "400", description = "Bad Request", content = { @Content(schema = @Schema(implementation = InvalidRequestException.class))} ),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = { @Content(schema = @Schema(hidden = true))} )
+    })
+    public ResponseEntity<?> updateLoggedInUser(HttpServletRequest request, @RequestBody UserRequest userRequest) {
+        User user = userService.updateLoggedInUser(request, userRequest);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new InvalidRequestException("No User Found."));
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(user);
+    }
+
     @PutMapping("/updateUser/{id}")
     @Operation(summary = "Update User By ID")
     @ApiResponses(value = {
@@ -136,6 +152,20 @@ public class UserController {
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(user);
+    }
+
+    @GetMapping("/deleteLoggedInUser")
+    @Operation(summary = "Delete Logged In User")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Delete Logged In User", content = {@Content(mediaType = "application/json", schema = @Schema(hidden = true))}),
+            @ApiResponse(responseCode = "400", description = "Bad Request", content = { @Content(schema = @Schema(implementation = InvalidRequestException.class))} ),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = { @Content(schema = @Schema(hidden = true))} )
+    })
+    public ResponseEntity<?> deleteLoggedInUser(HttpServletRequest request) {
+        if (userService.deleteLoggedInUser(request)) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("User Deleted Successfully.");
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new InvalidRequestException("Could Not Delete User."));
     }
 
     @DeleteMapping("/deleteUser/{id}")
