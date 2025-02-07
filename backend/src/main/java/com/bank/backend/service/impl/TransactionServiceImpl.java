@@ -3,6 +3,7 @@ package com.bank.backend.service.impl;
 import com.bank.backend.model.Account;
 import com.bank.backend.model.Transaction;
 import com.bank.backend.model.TransactionRequest;
+import com.bank.backend.model.TransactionType;
 import com.bank.backend.repository.AccountRepository;
 import com.bank.backend.repository.TransactionRepository;
 import com.bank.backend.service.AccountService;
@@ -10,8 +11,6 @@ import com.bank.backend.service.TransactionService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -30,8 +29,11 @@ public class TransactionServiceImpl implements TransactionService {
     public Transaction createTransaction(TransactionRequest transactionRequest, HttpServletRequest request) {
         if (isValidTransactionRequest(transactionRequest)) {
             Account account = accountRepository.findById(transactionRequest.getAccountId()).orElse(null);
+            double amount = transactionRequest.getTransactionType() == TransactionType.WITHDRAWAL ?
+                    transactionRequest.getAmount() : (transactionRequest.getAmount() * -1);
+
             if (account != null && isUserAllowed(transactionRequest.getAccountId(), request)
-                    && (account.getBalance() - transactionRequest.getAmount() >= 0.0)) {
+                    && (account.getBalance() - amount >= 0.0)) {
                 account.setBalance(account.getBalance() - transactionRequest.getAmount());
                 accountRepository.save(account);
 
