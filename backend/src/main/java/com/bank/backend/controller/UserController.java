@@ -65,8 +65,8 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Bad Request", content = { @Content(schema = @Schema(implementation = InvalidRequestException.class))} ),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = { @Content(schema = @Schema(hidden = true))} )
     })
-    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
-        AuthenticationResponse authenticationResponse = userService.refreshToken(request, response);
+    public ResponseEntity<?> refreshToken(HttpServletRequest request) {
+        AuthenticationResponse authenticationResponse = userService.refreshToken(request);
         if (authenticationResponse == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new InvalidRequestException("Error with Data Passed. Try Again!"));
         }

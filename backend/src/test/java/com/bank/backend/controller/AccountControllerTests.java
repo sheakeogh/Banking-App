@@ -144,26 +144,26 @@ public class AccountControllerTests {
 
     @Test
     public void testDeleteAccountByIdSuccess() {
-        Mockito.when(accountService.deleteAccountById(Mockito.any(Long.class))).thenReturn(true);
+        Mockito.when(accountService.deleteAccountById(Mockito.any(Long.class), Mockito.any(HttpServletRequest.class))).thenReturn(true);
 
-        ResponseEntity<?> response = accountController.deleteAccountById(1L);
+        ResponseEntity<?> response = accountController.deleteAccountById(1L, request);
 
         Assertions.assertNotNull(response);
         Assertions.assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
 
-        Mockito.verify(accountService, Mockito.times(1)).deleteAccountById(Mockito.any(Long.class));
+        Mockito.verify(accountService, Mockito.times(1)).deleteAccountById(Mockito.any(Long.class), Mockito.any(HttpServletRequest.class));
     }
 
     @Test
     public void testDeleteAccountByIdFail() {
-        Mockito.when(accountService.deleteAccountById(Mockito.any(Long.class))).thenReturn(false);
+        Mockito.when(accountService.deleteAccountById(Mockito.any(Long.class), Mockito.any(HttpServletRequest.class))).thenReturn(false);
 
-        ResponseEntity<?> response = accountController.deleteAccountById(1L);
+        ResponseEntity<?> response = accountController.deleteAccountById(1L, request);
 
         Assertions.assertNotNull(response);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 
-        Mockito.verify(accountService, Mockito.times(1)).deleteAccountById(Mockito.any(Long.class));
+        Mockito.verify(accountService, Mockito.times(1)).deleteAccountById(Mockito.any(Long.class), Mockito.any(HttpServletRequest.class));
     }
 
     private User createUser() {

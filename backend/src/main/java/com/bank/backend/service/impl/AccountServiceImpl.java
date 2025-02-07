@@ -3,6 +3,7 @@ package com.bank.backend.service.impl;
 import com.bank.backend.model.Account;
 import com.bank.backend.model.AccountRequest;
 import com.bank.backend.model.User;
+import com.bank.backend.model.UserRole;
 import com.bank.backend.repository.AccountRepository;
 import com.bank.backend.repository.UserRepository;
 import com.bank.backend.service.JwtService;
@@ -12,7 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import com.bank.backend.service.AccountService;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.Random;
 
 @Service
@@ -73,8 +74,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public boolean deleteAccountById(Long id) {
-       if (accountRepository.existsById(id)) {
+    public boolean deleteAccountById(Long id, HttpServletRequest request) {
+       if (accountRepository.existsById(id) && isUserAllowed(id, request)) {
            accountRepository.deleteById(id);
            return true;
        }
@@ -96,6 +97,26 @@ public class AccountServiceImpl implements AccountService {
         return accountRequest != null &&
                 accountRequest.getAccountType() != null &&
                 accountRequest.getUserId() != null;
+    }
+
+    private boolean isUserAllowed(Long id, HttpServletRequest request) {
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if(authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return false;
+        }
+
+        String token = authHeader.substring(7);
+        String username = jwtService.extractUsername(token);
+        User user = userRepository.findByUsername(username).orElse(null);
+        if (user == null) {
+            return false;
+        }
+
+        if (user.getUserRole() == UserRole.ADMIN) {
+            return true;
+        }
+
+        return user.getAccountList().stream().anyMatch(account -> Objects.equals(account.getId(), id));
     }
 
 }

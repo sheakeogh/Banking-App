@@ -95,8 +95,8 @@ public class AccountController {
             @ApiResponse(responseCode = "400", description = "Bad Request", content = { @Content(schema = @Schema(implementation = InvalidRequestException.class))} ),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = { @Content(schema = @Schema(hidden = true))} )
     })
-    public ResponseEntity<?> deleteAccountById(@PathVariable Long id) {
-        if (accountService.deleteAccountById(id)) {
+    public ResponseEntity<?> deleteAccountById(@PathVariable Long id, HttpServletRequest request) {
+        if (accountService.deleteAccountById(id, request)) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Account Has Been Deleted.");
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new InvalidRequestException("Issue with Data Passed. Try Again!"));

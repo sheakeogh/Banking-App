@@ -12,6 +12,6 @@ public interface AccountService {
     List<Account> getLoggedInAccounts(HttpServletRequest request);
     Account getAccountById(Long id);
     List<Account> getAllAccounts();
-    boolean deleteAccountById(Long id);
+    boolean deleteAccountById(Long id, HttpServletRequest request);
 
 }

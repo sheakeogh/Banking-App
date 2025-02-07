@@ -200,14 +200,22 @@ public class AccountServiceImplTests {
 
     @Test
     public void testDeleteByIdSuccess() {
+        User user = createUser();
+
         Mockito.when(accountRepository.existsById(Mockito.any(Long.class))).thenReturn(true);
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
+        Mockito.when(jwtService.extractUsername(Mockito.anyString())).thenReturn(user.getUsername());
+        Mockito.when(userRepository.findByUsername(Mockito.anyString())).thenReturn(Optional.of(user));
         Mockito.doNothing().when(accountRepository).deleteById(Mockito.any(Long.class));
 
-        boolean deleteResponse = accountService.deleteAccountById(1L);
+        boolean deleteResponse = accountService.deleteAccountById(1L, request);
 
         Assertions.assertTrue(deleteResponse);
 
         Mockito.verify(accountRepository, Mockito.times(1)).existsById(Mockito.any(Long.class));
+        Mockito.verify(request, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
+        Mockito.verify(jwtService, Mockito.times(1)).extractUsername(Mockito.anyString());
+        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(Mockito.anyString());
         Mockito.verify(accountRepository, Mockito.times(1)).deleteById(Mockito.any(Long.class));
     }
 
@@ -215,11 +223,69 @@ public class AccountServiceImplTests {
     public void testDeleteByIdFail() {
         Mockito.when(accountRepository.existsById(Mockito.any(Long.class))).thenReturn(false);
 
-        boolean deleteResponse = accountService.deleteAccountById(1L);
+        boolean deleteResponse = accountService.deleteAccountById(1L, request);
 
         Assertions.assertFalse(deleteResponse);
 
         Mockito.verify(accountRepository, Mockito.times(1)).existsById(Mockito.any(Long.class));
+    }
+
+    @Test
+    public void testDeleteByIdNullHeader() {
+        Mockito.when(accountRepository.existsById(Mockito.any(Long.class))).thenReturn(true);
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Test: Token");
+        Mockito.when(requestNull.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
+
+        boolean deleteAccountResponse = accountService.deleteAccountById(1L, request);
+        boolean deleteAccountResponseNull = accountService.deleteAccountById(1L, requestNull);
+
+        Assertions.assertFalse(deleteAccountResponse);
+        Assertions.assertFalse(deleteAccountResponseNull);
+
+        Mockito.verify(accountRepository, Mockito.times(2)).existsById(Mockito.any(Long.class));
+        Mockito.verify(request, Mockito.times(1)).getHeader(Mockito.any());
+        Mockito.verify(requestNull, Mockito.times(1)).getHeader(Mockito.any());
+    }
+
+    @Test
+    public void testDeleteByIdNullUser() {
+        User user = createUser();
+
+        Mockito.when(accountRepository.existsById(Mockito.any(Long.class))).thenReturn(true);
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
+        Mockito.when(jwtService.extractUsername(Mockito.anyString())).thenReturn(user.getUsername());
+        Mockito.when(userRepository.findByUsername(Mockito.anyString())).thenReturn(Optional.empty());
+
+        boolean deleteAccountResponse = accountService.deleteAccountById(1L, request);
+
+        Assertions.assertFalse(deleteAccountResponse);
+
+        Mockito.verify(accountRepository, Mockito.times(1)).existsById(Mockito.any(Long.class));
+        Mockito.verify(request, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
+        Mockito.verify(jwtService, Mockito.times(1)).extractUsername(Mockito.anyString());
+        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(Mockito.anyString());
+    }
+
+    @Test
+    public void testDeleteByIdAdmin() {
+        User user = createUser();
+        user.setUserRole(UserRole.ADMIN);
+
+        Mockito.when(accountRepository.existsById(Mockito.any(Long.class))).thenReturn(true);
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
+        Mockito.when(jwtService.extractUsername(Mockito.anyString())).thenReturn(user.getUsername());
+        Mockito.when(userRepository.findByUsername(Mockito.anyString())).thenReturn(Optional.of(user));
+        Mockito.doNothing().when(accountRepository).deleteById(Mockito.any(Long.class));
+
+        boolean deleteResponse = accountService.deleteAccountById(1L, request);
+
+        Assertions.assertTrue(deleteResponse);
+
+        Mockito.verify(accountRepository, Mockito.times(1)).existsById(Mockito.any(Long.class));
+        Mockito.verify(request, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
+        Mockito.verify(jwtService, Mockito.times(1)).extractUsername(Mockito.anyString());
+        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(Mockito.anyString());
+        Mockito.verify(accountRepository, Mockito.times(1)).deleteById(Mockito.any(Long.class));
     }
 
     private User createUser() {

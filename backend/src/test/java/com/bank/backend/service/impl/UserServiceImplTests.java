@@ -181,7 +181,6 @@ public class UserServiceImplTests {
     @Test
     public void testRefreshTokenSuccess() {
         User user = createUser();
-        HttpServletResponse mockResponse = Mockito.mock(HttpServletResponse.class);
 
         Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
         Mockito.when(jwtService.extractUsername(Mockito.anyString())).thenReturn(user.getUsername());
@@ -193,7 +192,7 @@ public class UserServiceImplTests {
         Mockito.when(tokenRepository.saveAll(Mockito.anyList())).thenReturn(user.getTokenList());
         Mockito.when(tokenRepository.save(Mockito.any(Token.class))).thenReturn(user.getTokenList().get(0));
 
-        AuthenticationResponse authenticationResponse = userService.refreshToken(request, mockResponse);
+        AuthenticationResponse authenticationResponse = userService.refreshToken(request);
 
         Assertions.assertNotNull(authenticationResponse);
         Assertions.assertEquals("newAccessToken", authenticationResponse.getAccessToken());
@@ -213,13 +212,11 @@ public class UserServiceImplTests {
 
     @Test
     public void testRefreshTokenNullHeader() {
-        HttpServletResponse mockResponse = Mockito.mock(HttpServletResponse.class);
-
         Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Test: Token");
         Mockito.when(requestNull.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
 
-        AuthenticationResponse authenticationResponse = userService.refreshToken(request, mockResponse);
-        AuthenticationResponse authenticationResponseNullHeader = userService.refreshToken(requestNull, mockResponse);
+        AuthenticationResponse authenticationResponse = userService.refreshToken(request);
+        AuthenticationResponse authenticationResponseNullHeader = userService.refreshToken(requestNull);
 
         Assertions.assertNull(authenticationResponse);
         Assertions.assertNull(authenticationResponseNullHeader);
@@ -231,13 +228,12 @@ public class UserServiceImplTests {
     @Test
     public void testRefreshTokenNullUser() {
         User user = createUser();
-        HttpServletResponse mockResponse = Mockito.mock(HttpServletResponse.class);
 
         Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
         Mockito.when(jwtService.extractUsername(Mockito.anyString())).thenReturn(user.getUsername());
         Mockito.when(userRepository.findByUsername(Mockito.anyString())).thenReturn(Optional.empty());
 
-        AuthenticationResponse authenticationResponse = userService.refreshToken(request, mockResponse);
+        AuthenticationResponse authenticationResponse = userService.refreshToken(request);
 
         Assertions.assertNull(authenticationResponse);
 
@@ -249,14 +245,13 @@ public class UserServiceImplTests {
     @Test
     public void testRefreshTokenInvalidToken() {
         User user = createUser();
-        HttpServletResponse mockResponse = Mockito.mock(HttpServletResponse.class);
 
         Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
         Mockito.when(jwtService.extractUsername(Mockito.anyString())).thenReturn(user.getUsername());
         Mockito.when(userRepository.findByUsername(Mockito.anyString())).thenReturn(Optional.of(user));
         Mockito.when(jwtService.isValidRefreshToken(Mockito.anyString(), Mockito.any(User.class))).thenReturn(false);
 
-        AuthenticationResponse authenticationResponse = userService.refreshToken(request, mockResponse);
+        AuthenticationResponse authenticationResponse = userService.refreshToken(request);
 
         Assertions.assertNull(authenticationResponse);
 

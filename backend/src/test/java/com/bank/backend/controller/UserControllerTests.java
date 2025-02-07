@@ -95,32 +95,29 @@ public class UserControllerTests {
 
     @Test
     public void testRefreshTokenSuccess() {
-        HttpServletResponse mockResponse = Mockito.mock(HttpServletResponse.class);
         AuthenticationResponse authenticationResponse = new AuthenticationResponse("accessToken", "refreshToken", "User Login Was Successful.");
 
-        Mockito.when(userService.refreshToken(Mockito.any(HttpServletRequest.class), Mockito.any(HttpServletResponse.class))).thenReturn(authenticationResponse);
+        Mockito.when(userService.refreshToken(Mockito.any(HttpServletRequest.class))).thenReturn(authenticationResponse);
 
-        ResponseEntity<?> response = userController.refreshToken(request, mockResponse);
+        ResponseEntity<?> response = userController.refreshToken(request);
 
         Assertions.assertNotNull(response);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertEquals(authenticationResponse, response.getBody());
 
-        Mockito.verify(userService, Mockito.times(1)).refreshToken(Mockito.any(HttpServletRequest.class), Mockito.any(HttpServletResponse.class));
+        Mockito.verify(userService, Mockito.times(1)).refreshToken(Mockito.any(HttpServletRequest.class));
     }
 
     @Test
     public void testRefreshTokenFail() {
-        HttpServletResponse mockResponse = Mockito.mock(HttpServletResponse.class);
+        Mockito.when(userService.refreshToken(Mockito.any(HttpServletRequest.class))).thenReturn(null);
 
-        Mockito.when(userService.refreshToken(Mockito.any(HttpServletRequest.class), Mockito.any(HttpServletResponse.class))).thenReturn(null);
-
-        ResponseEntity<?> response = userController.refreshToken(request, mockResponse);
+        ResponseEntity<?> response = userController.refreshToken(request);
 
         Assertions.assertNotNull(response);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 
-        Mockito.verify(userService, Mockito.times(1)).refreshToken(Mockito.any(HttpServletRequest.class), Mockito.any(HttpServletResponse.class));
+        Mockito.verify(userService, Mockito.times(1)).refreshToken(Mockito.any(HttpServletRequest.class));
     }
 
     @Test

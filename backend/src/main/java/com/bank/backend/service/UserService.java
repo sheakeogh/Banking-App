@@ -12,7 +12,7 @@ public interface UserService {
 
     AuthenticationResponse createNewUser(UserRequest userRequest);
     AuthenticationResponse loginUser(LoginRequest userRequest);
-    AuthenticationResponse refreshToken(HttpServletRequest request, HttpServletResponse response);
+    AuthenticationResponse refreshToken(HttpServletRequest request);
     User getLoggedInUser(HttpServletRequest request);
     User getUserById(Long id);
     List<User> getAllUsers();
