@@ -5,7 +5,6 @@ import com.bank.backend.repository.TokenRepository;
 import com.bank.backend.repository.UserRepository;
 import com.bank.backend.service.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

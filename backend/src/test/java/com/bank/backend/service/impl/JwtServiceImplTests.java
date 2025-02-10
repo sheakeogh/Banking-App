@@ -15,7 +15,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
 import java.security.Key;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;

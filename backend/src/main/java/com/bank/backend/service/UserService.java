@@ -5,7 +5,6 @@ import com.bank.backend.model.LoginRequest;
 import com.bank.backend.model.User;
 import com.bank.backend.model.UserRequest;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 
 public interface UserService {

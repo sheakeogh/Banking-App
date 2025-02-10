@@ -1,8 +1,6 @@
 package com.bank.backend.controller;
 
 import com.bank.backend.exception.InvalidRequestException;
-import com.bank.backend.model.Account;
-import com.bank.backend.model.AccountRequest;
 import com.bank.backend.model.Transaction;
 import com.bank.backend.model.TransactionRequest;
 import com.bank.backend.service.TransactionService;

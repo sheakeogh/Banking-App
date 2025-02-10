@@ -6,7 +6,6 @@ import com.bank.backend.repository.UserRepository;
 import com.bank.backend.service.UserService;
 import com.bank.backend.service.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
