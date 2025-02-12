@@ -63,8 +63,8 @@ public class AccountController {
             @ApiResponse(responseCode = "400", description = "Bad Request", content = { @Content(schema = @Schema(implementation = InvalidRequestException.class))} ),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = { @Content(schema = @Schema(hidden = true))} )
     })
-    public ResponseEntity<?> getAccountById(@PathVariable Long id) {
-        Account account = accountService.getAccountById(id);
+    public ResponseEntity<?> getAccountById(@PathVariable Long id, HttpServletRequest request) {
+        Account account = accountService.getAccountById(id, request);
         if (account == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new InvalidRequestException("No Account Found. Try Again!"));
         }

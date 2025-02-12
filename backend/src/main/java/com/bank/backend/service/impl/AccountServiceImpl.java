@@ -64,8 +64,12 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Account getAccountById(Long id) {
-        return accountRepository.findById(id).orElse(null);
+    public Account getAccountById(Long id, HttpServletRequest request) {
+        if (isUserAllowed(id, request)) {
+            return accountRepository.findById(id).orElse(null);
+        }
+
+        return null;
     }
 
     @Override

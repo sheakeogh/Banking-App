@@ -10,7 +10,7 @@ public interface AccountService {
 
     Account createAccount(AccountRequest accountRequest);
     List<Account> getLoggedInAccounts(HttpServletRequest request);
-    Account getAccountById(Long id);
+    Account getAccountById(Long id, HttpServletRequest request);
     List<Account> getAllAccounts();
     boolean deleteAccountById(Long id, HttpServletRequest request);
 

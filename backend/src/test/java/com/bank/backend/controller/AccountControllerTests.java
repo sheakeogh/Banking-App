@@ -92,27 +92,27 @@ public class AccountControllerTests {
     public void testGetAccountByIdSuccess() {
         Account account = createUser().getAccountList().get(0);
 
-        Mockito.when(accountService.getAccountById(Mockito.any(Long.class))).thenReturn(account);
+        Mockito.when(accountService.getAccountById(Mockito.any(Long.class), Mockito.any(HttpServletRequest.class))).thenReturn(account);
 
-        ResponseEntity<?> response = accountController.getAccountById(1L);
+        ResponseEntity<?> response = accountController.getAccountById(1L, request);
 
         Assertions.assertNotNull(response);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertEquals(account, response.getBody());
 
-        Mockito.verify(accountService, Mockito.times(1)).getAccountById(Mockito.any(Long.class));
+        Mockito.verify(accountService, Mockito.times(1)).getAccountById(Mockito.any(Long.class), Mockito.any(HttpServletRequest.class));
     }
 
     @Test
     public void testGetAccountByIdFail() {
-        Mockito.when(accountService.getAccountById(Mockito.any(Long.class))).thenReturn(null);
+        Mockito.when(accountService.getAccountById(Mockito.any(Long.class), Mockito.any(HttpServletRequest.class))).thenReturn(null);
 
-        ResponseEntity<?> response = accountController.getAccountById(1L);
+        ResponseEntity<?> response = accountController.getAccountById(1L, request);
 
         Assertions.assertNotNull(response);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 
-        Mockito.verify(accountService, Mockito.times(1)).getAccountById(Mockito.any(Long.class));
+        Mockito.verify(accountService, Mockito.times(1)).getAccountById(Mockito.any(Long.class), Mockito.any(HttpServletRequest.class));
     }
 
     @Test

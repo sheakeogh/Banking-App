@@ -143,11 +143,15 @@ public class AccountServiceImplTests {
 
     @Test
     public void testGetAccountByIdSuccess() {
-        Account account = createUser().getAccountList().get(0);
+        User user = createUser();
+        Account account = user.getAccountList().get(0);
 
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
+        Mockito.when(jwtService.extractUsername(Mockito.anyString())).thenReturn(user.getUsername());
+        Mockito.when(userRepository.findByUsername(Mockito.anyString())).thenReturn(Optional.of(user));
         Mockito.when(accountRepository.findById(Mockito.any(Long.class))).thenReturn(Optional.of(account));
 
-        Account accountResponse = accountService.getAccountById(1L);
+        Account accountResponse = accountService.getAccountById(1L, request);
 
         Assertions.assertNotNull(accountResponse);
         Assertions.assertEquals(account.getId(), accountResponse.getId());
@@ -155,17 +159,28 @@ public class AccountServiceImplTests {
         Assertions.assertEquals(account.getBalance(), accountResponse.getBalance());
         Assertions.assertEquals(account.getAccountType(), accountResponse.getAccountType());
 
+        Mockito.verify(request, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
+        Mockito.verify(jwtService, Mockito.times(1)).extractUsername(Mockito.anyString());
+        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(Mockito.anyString());
         Mockito.verify(accountRepository, Mockito.times(1)).findById(Mockito.any(Long.class));
     }
 
     @Test
     public void testGetAccountByIdFail() {
+        User user = createUser();
+
+        Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
+        Mockito.when(jwtService.extractUsername(Mockito.anyString())).thenReturn(user.getUsername());
+        Mockito.when(userRepository.findByUsername(Mockito.anyString())).thenReturn(Optional.of(user));
         Mockito.when(accountRepository.findById(Mockito.any(Long.class))).thenReturn(Optional.empty());
 
-        Account accountResponse = accountService.getAccountById(1L);
+        Account accountResponse = accountService.getAccountById(1L, request);
 
         Assertions.assertNull(accountResponse);
 
+        Mockito.verify(request, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
+        Mockito.verify(jwtService, Mockito.times(1)).extractUsername(Mockito.anyString());
+        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(Mockito.anyString());
         Mockito.verify(accountRepository, Mockito.times(1)).findById(Mockito.any(Long.class));
     }
 
