@@ -51,7 +51,7 @@ function SignUpForm({ handleSignUp, handleLogin, handleChange, userRequest }) {
                                         <div class="row">
                                             <div class="col-md-6 mb-4">
                                                 <div data-mdb-input-init class="form-outline">
-                                                    <input type="email" id="form3Example1" class="form-control"  placeholder="Userame" name="username" value={userRequest.username} onChange={handleChange}/>
+                                                    <input type="text" id="form3Example1" class="form-control"  placeholder="Userame" name="username" value={userRequest.username} onChange={handleChange}/>
                                                 </div>
                                             </div>
                                             <div class="col-md-6 mb-4">

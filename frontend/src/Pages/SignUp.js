@@ -29,7 +29,7 @@ function SignUp() {
             const data = await response.json();
             saveTokens(data.accessToken, data.refreshToken);
             console.log(data.message);
-            navigate("/home");
+            navigate("/createAccount");
         }
         else {
             alert("Registration Failed. Please try again!");
