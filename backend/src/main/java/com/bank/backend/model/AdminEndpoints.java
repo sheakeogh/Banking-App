@@ -10,7 +10,6 @@ public enum AdminEndpoints {
     GET_ALL_USERS("/api/users/getAllUsers/**"),
     GET_ALL_ACCOUNTS("/api/accounts/getAllAccounts/**"),
     GET_USER_BY_ID("/api/users/getUser/**"),
-    GET_ACCOUNT_BY_ID("/api/accounts/getAccount/**"),
     UPDATE_USER_BY_ID("/api/users/updateUser/**"),
     DELETE_USER_BY_ID("/api/users/deleteUser/**");
 
