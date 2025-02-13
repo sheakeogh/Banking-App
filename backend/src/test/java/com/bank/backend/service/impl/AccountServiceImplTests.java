@@ -171,8 +171,7 @@ public class AccountServiceImplTests {
 
         Mockito.when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + user.getTokenList().get(0).getRefreshToken());
         Mockito.when(jwtService.extractUsername(Mockito.anyString())).thenReturn(user.getUsername());
-        Mockito.when(userRepository.findByUsername(Mockito.anyString())).thenReturn(Optional.of(user));
-        Mockito.when(accountRepository.findById(Mockito.any(Long.class))).thenReturn(Optional.empty());
+        Mockito.when(userRepository.findByUsername(Mockito.anyString())).thenReturn(Optional.empty());
 
         Account accountResponse = accountService.getAccountById(1L, request);
 
@@ -181,7 +180,6 @@ public class AccountServiceImplTests {
         Mockito.verify(request, Mockito.times(1)).getHeader(HttpHeaders.AUTHORIZATION);
         Mockito.verify(jwtService, Mockito.times(1)).extractUsername(Mockito.anyString());
         Mockito.verify(userRepository, Mockito.times(1)).findByUsername(Mockito.anyString());
-        Mockito.verify(accountRepository, Mockito.times(1)).findById(Mockito.any(Long.class));
     }
 
     @Test

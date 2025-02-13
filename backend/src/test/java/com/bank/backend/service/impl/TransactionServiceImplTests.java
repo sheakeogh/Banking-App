@@ -66,6 +66,33 @@ public class TransactionServiceImplTests {
     }
 
     @Test
+    public void testCreateTransactionLodgement() {
+        TransactionRequest transactionRequest = createTransactionRequest();
+        Account account = createUser().getAccountList().get(0);
+        Transaction transaction = account.getTransactionList().get(0);
+        transactionRequest.setTransactionType(TransactionType.LODGEMENT);
+
+        Mockito.when(accountRepository.findById(Mockito.any(Long.class))).thenReturn(Optional.of(account));
+        Mockito.when(accountService.getLoggedInAccounts(Mockito.any(HttpServletRequest.class))).thenReturn(List.of(account));
+        Mockito.when(accountRepository.save(Mockito.any(Account.class))).thenReturn(account);
+        Mockito.when(transactionRepository.save(Mockito.any(Transaction.class))).thenReturn(transaction);
+
+        Transaction transactionResponse = transactionService.createTransaction(transactionRequest, request);
+
+        Assertions.assertNotNull(transactionResponse);
+        Assertions.assertEquals(transaction.getId(), transactionResponse.getId());
+        Assertions.assertEquals(transaction.getTransactionType(), transactionResponse.getTransactionType());
+        Assertions.assertEquals(transaction.getAccount(), transactionResponse.getAccount());
+        Assertions.assertEquals(transaction.getAmount(), transactionResponse.getAmount());
+        Assertions.assertEquals(transaction.getDescription(), transactionResponse.getDescription());
+
+        Mockito.verify(accountRepository, Mockito.times(1)).findById(Mockito.any(Long.class));
+        Mockito.verify(accountService, Mockito.times(1)).getLoggedInAccounts(Mockito.any(HttpServletRequest.class));
+        Mockito.verify(accountRepository, Mockito.times(1)).save(Mockito.any(Account.class));
+        Mockito.verify(transactionRepository, Mockito.times(1)).save(Mockito.any(Transaction.class));
+    }
+
+    @Test
     public void testCreateTransactionInvalidRequest() {
         Transaction transactionResponse = transactionService.createTransaction(null, request);
 
